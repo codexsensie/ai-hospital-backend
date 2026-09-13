@@ -24,7 +24,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Value("${jwt.secret}")
     private String secretKey;
 
-
     private SecretKey getKey() {
 
         return io.jsonwebtoken.security.Keys.hmacShaKeyFor(
@@ -39,9 +38,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
+        // CORS preflight requests do not require JWT
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authorizationHeader =
                 request.getHeader("Authorization");
 
+        // No JWT → continue normally.
+        // SecurityConfig will decide whether the endpoint is public.
         if (authorizationHeader == null ||
                 !authorizationHeader.startsWith("Bearer ")) {
 
@@ -76,8 +83,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .getContext()
                     .setAuthentication(authentication);
 
-
-
         } catch (Exception e) {
 
             response.setStatus(
@@ -87,16 +92,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setContentType("application/json");
 
             response.getWriter().write("""
-        {
-            "status": 401,
-            "message": "Invalid or expired JWT token"
-        }
-        """);
+                    {
+                        "status": 401,
+                        "message": "Invalid or expired JWT token"
+                    }
+                    """);
 
             return;
         }
 
-        // Continue the request to the next filter/controller
+        // Continue request
         filterChain.doFilter(request, response);
     }
 }

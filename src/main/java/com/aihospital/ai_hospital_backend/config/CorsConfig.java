@@ -20,7 +20,8 @@ public class CorsConfig {
         configuration.setAllowedOrigins(
                 List.of(
                         "http://localhost:5173",
-                        "http://localhost:5174"
+                        "http://localhost:5174",
+                        "https://ai-hospital-frontend-rho.vercel.app"
                 )
         );
 
@@ -37,6 +38,8 @@ public class CorsConfig {
         configuration.setAllowedHeaders(
                 List.of("*")
         );
+
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
